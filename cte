@@ -1,0 +1,224 @@
+#!/usr/bin/env bash
+# Colorful Text Editor
+#
+# author:
+# Şehidcan Erdim
+# sehidcan (at) gmail (dot) com
+# 
+# 08.03.2014 - last update
+# 27.02.2014 - first usable code
+# 
+
+# assigning color codes to variables
+normal=$'\e[0m'; red=$'\e[31;01m'; green=$'\e[32;01m'; yellow=$'\e[33;01m'; blue=$'\e[34;01m'; pink=$'\e[35;01m'; cyan=$'\e[36;01m'; white=$'\e[37;01m'
+# these functions make it easy to use colorful messages
+en() { echo -e "${normal}${*}${normal}";} ; er() { echo -e "${red}${*}${normal}";} ; eg() { echo -e "${green}${*}${normal}";} ; ey() { echo -e "${yellow}${*}${normal}";}
+eb() { echo -e "${blue}${*}${normal}";} ; ep() { echo -e "${pink}${*}${normal}";} ; ec() { echo -e "${cyan}${*}${normal}";} ; ew() { echo -e "${white}${*}${normal}";}
+en2() { echo -en "${normal}${*}${normal}";} ; er2() { echo -en "${red}${*}${normal}";} ; eg2() { echo -en "${green}${*}${normal}";} ; ey2() { echo -en "${yellow}${*}${normal}";}
+eb2() { echo -en "${blue}${*}${normal}";} ; ep2() { echo -en "${pink}${*}${normal}";} ; ec2() { echo -en "${cyan}${*}${normal}";} ; ew2() { echo -en "${white}${*}${normal}";}
+# clear screen and show a blank line
+cl() { clear; echo;}
+
+# show error message if input is empty
+[[ -z "${@}" ]] && { echo; er "  Error! I need a filename!"; ey2 "Usage: "; er "./$(basename $0) file.example"; exit 0; }
+
+# use input as filename
+file="${@}"
+
+# temporary file for line editing
+temp_file="stec.tmp"
+
+# create file if it doesn't exist
+[[ ! -e "${file}" ]] && touch "${file}"
+
+# delete temporary file if it exists
+[[ -e "${temp_file}" ]] && rm -rf "${temp_file}"
+
+# change tab space to 2
+tabs 2
+
+# default line count per page
+num="5"
+
+# line count difference between pages
+num2="$(( num - 1))"
+
+# last line of first screen (default: 5)
+last_line="${num}"
+
+# first line of screen
+first_line="$((last_line - ${num2}))"
+
+# default line to highlight
+glow="1"
+
+# total line number of input file
+last_line_of_file="$(grep -c ^ ${file})"
+
+# moves highlight between lines/pages based on user input
+glow() {
+    case "${@}" in
+    up)
+        if [ "${glow}" -gt 1 ]; then
+            ((glow == first_line)) && glow "left" || ((glow--))
+        fi
+    ;;
+    down)
+        if [ "${glow}" != "${last_line_of_file}" ]; then
+            ((glow == last_line)) && glow "right" || ((glow++))
+        fi
+    ;;
+    left)
+        ((last_line > num)) && {
+            ((last_line-=${num}))
+            first_line="$((last_line - ${num2}))"
+            glow="${last_line}"
+            }
+    ;;
+    right)
+        ((last_line < last_line_of_file)) && {
+            ((last_line+=${num}))
+            first_line="$((last_line - ${num2}))"
+            glow="${first_line}"
+            }
+    ;;
+    esac
+    
+    if [ "${last_line_of_file}" -gt "0" ]; then
+        if [ "${glow}" -gt "${last_line}" ]; then
+            if [ "${last_line}" -gt "${last_line_of_file}" ]; then
+                glow="${last_line_of_file}"
+            else
+                glow="${last_line}"
+            fi
+        fi
+    else
+        glow="1"; first_line="1"; last_line="1"
+    fi
+}
+
+# shows input file line by line
+show_file(){
+    cl
+    
+    # echo "gl: $glow  fl: $first_line  ll: $last_line  num: $num  num2: $num2  llof: $last_line_of_file"
+    
+    # for x in $(seq ${first_line} ${last_line})
+    # for x in {${first_line}..${last_line}}
+    for ((x="${first_line}"; x<="${last_line}"; x++))
+    do
+        if [ "${x}" -le "${last_line_of_file}" ]; then
+            current_line=`sed "${x}q;d" "${file}"`
+            
+            if [ "${x}" == "${glow}" ]; then
+                glow_line="${current_line}"
+                er2 "  ${x}- "; eg "\t${current_line}"
+            else
+                ey2 "  ${x}- "; ew "\t${current_line}"
+            fi
+        fi
+    done
+}
+
+# read user input while main screen is active
+main(){
+    echo; echo;
+    ep2 "  Press "; ey2 "h"; ep " for help"
+    echo
+    
+    unset chr z1 z2 z3
+    read -sN1 chr
+    read -sN1 -t 0.0001 z1
+    read -sN1 -t 0.0001 z2
+    read -sN1 -t 0.0001 z3
+    chr+="${z1}${z2}${z3}"
+    
+    case "${chr}" in
+    d|$'\x1b\x5b\x33\x7e')  #Delete
+        sed -i "${glow}d" "${file}"
+        last_line_of_file="$(grep -c ^ ${file})"
+        glow "up"
+    ;;
+    $'\x1b\x5b\x41')  #Up Arrow
+        glow "up"
+    ;;
+    $'\x1b\x5b\x42')  #Down Arrow
+        glow "down"
+    ;;
+    $'\x1b\x5b\x44')  #Left Arrow
+        glow "left"
+    ;;
+    $'\x1b\x5b\x43')  #Right Arrow
+        glow "right"
+    ;;
+    a)
+        ./sle.sh ""
+        new_line="$(cat stec.tmp)"
+        if [ "${last_line_of_file}" -gt "0" ]; then
+            sed -i "${glow} a ${new_line}" "${file}"
+        else
+            echo "${new_line}" >> "${file}"
+        fi
+        last_line_of_file="$(grep -c ^ ${file})"
+    ;;
+    c)
+        while true
+        do
+            show_file
+            echo; ep2 "  Lines per page "; ey2 "(1-9)"; ep2 ": "
+            # save IFS to restore it later
+            OLD_IFS="$IFS"
+            # clear IFS
+            IFS=""
+            # read one character from user input and assign it yo new_num variable
+            IFS= read -sN1 new_num
+            # restore IFS to it's old value
+            IFS="$OLD_IFS"
+            
+            # check new_num variable
+            case "${new_num}" in
+            [1-9])
+                # stop if it only includes digits, continue if not
+                break
+            ;;
+            esac
+        done
+        # assign new_num variable to num variable (line count per page)
+        num="${new_num}"
+        # reassign variables according to new line count
+        last_line="${num}"; num2="$(( num - 1))"
+        # go to first line of file, reset highlighted line
+        first_line="1"; glow="1"
+    ;;
+    e|$'\x1b\x5b\x32\x7e')  #Insert
+        ./sle.sh "${glow_line}"
+        new_line="$(cat stec.tmp)"
+        sed -i "${glow} c ${new_line}" "${file}"
+    ;;
+    f)
+        last_line="${num}"; first_line="1"; glow="1"
+    ;;
+    h)
+        cl
+        ep2 "  Up/Down: "; ew "previous/next line"
+        ep2 "  Left/Right: "; ew "previous/next page"
+        ep2 "  Delete: "; ew "delete highlighted line"
+        ep2 "  a: "; ew "add new line after the highlighted one"
+        ep2 "  c: "; ew "change number of lines per page"
+        ep2 "  e: "; ew "edit highlighted line"
+        ep2 "  f: "; ew "go back to first line"
+        ep2 "  q: "; ew "quit"
+        echo; ey "  Press any key to continue..."; echo
+        IFS= read -r -n 1 -s key
+    ;;
+    q)
+        IFS="$OLD_IFS"; tabs 4; exit 0
+    ;;
+    esac
+}
+
+while true
+do
+    show_file
+    main
+done
