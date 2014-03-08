@@ -1,0 +1,214 @@
+#!/usr/bin/env bash
+# Line EDitor
+#
+# author:
+# Şehidcan Erdim
+# sehidcan (at) gmail (dot) com
+# 
+# 08.03.2014 - last update
+# 27.02.2014 - first usable code
+# 
+
+# assigning color codes to variables
+normal=$'\e[0m'; red=$'\e[31;01m'; green=$'\e[32;01m'; yellow=$'\e[33;01m'; blue=$'\e[34;01m'; pink=$'\e[35;01m'; cyan=$'\e[36;01m'; white=$'\e[37;01m'
+# these functions make it easy to use colorful messages
+en() { echo -e "${normal}${*}${normal}";} ; er() { echo -e "${red}${*}${normal}";} ; eg() { echo -e "${green}${*}${normal}";} ; ey() { echo -e "${yellow}${*}${normal}";}
+eb() { echo -e "${blue}${*}${normal}";} ; ep() { echo -e "${pink}${*}${normal}";} ; ec() { echo -e "${cyan}${*}${normal}";} ; ew() { echo -e "${white}${*}${normal}";}
+en2() { echo -en "${normal}${*}${normal}";} ; er2() { echo -en "${red}${*}${normal}";} ; eg2() { echo -en "${green}${*}${normal}";} ; ey2() { echo -en "${yellow}${*}${normal}";}
+eb2() { echo -en "${blue}${*}${normal}";} ; ep2() { echo -en "${pink}${*}${normal}";} ; ec2() { echo -en "${cyan}${*}${normal}";} ; ew2() { echo -en "${white}${*}${normal}";}
+# clear screen and show a blank line
+cl() { clear; echo;}
+
+inp="$@"
+bc="0"
+temp_file="stec.tmp"
+
+calc() {
+    length="${#inp}"
+    
+    ((length == 0)) && {
+        last="0"; bc="0"; ac="0"
+        }
+    
+    ((length > 0)) && {
+        last="$((length-1))"
+        ((bc > length)) && bc="${length}"
+        ac="$((length-bc))"
+        }
+}
+
+cur_left() {
+    ((bc > 0)) && ((bc--))
+    calc
+}
+
+cur_right() {
+    length="${#inp}"
+    last="$((length-1))"
+    ((bc > length)) && bc="${length}" || ((bc++))
+    ac="$((length-bc))"
+    calc
+}
+
+cur_first() {
+    bc="0"
+    calc
+}
+
+cur_last() {
+    bc="${length}"
+    calc
+}
+
+show_line() {
+    cl
+    calc
+    ch="0"
+    echo; eg "  Editing Line..."
+    echo; ec2 "  Number of characters: "; ey "${length}"; echo
+    # for ch in $(seq 0 $last)
+    # for ch in {0..${last}}
+    for ((ch="0"; ch<="${last}"; ch++))
+    do
+        if [ "${length}" == "0" ]; then
+            eg2 "|"
+        else
+            if [ "${bc}" -lt "${length}" ]; then
+                ((ch == bc)) && eg2 "|"
+                ew2 "${inp:${ch}:1}"
+            elif [ "${bc}" == "${length}" ]; then
+                ((ch == last)) && { ew2 "${inp:${ch}:1}"; eg2 "|"; } || ew2 "${inp:${ch}:1}"
+            fi
+        fi
+    done
+}
+
+add() {
+    while true
+    do
+        show_line
+        
+        echo; echo; er "  Write anything you want and use arrow keys to end:"; echo
+        
+        OLD_IFS="$IFS"
+        IFS=""
+        read -sN1 key
+        read -sN1 -t 0.0001 m1
+        read -sN1 -t 0.0001 m2
+        read -sN1 -t 0.0001 m3
+        key+="${m1}${m2}${m3}"
+        IFS="$OLD_IFS"
+        
+        case "${key}" in
+        [[:print:]])
+            if [ "${length}" == "0" ]; then
+                inp="${key}"
+            else
+                if [ "${bc}" == "0" ]; then
+                    inp="${key}${inp}"
+                elif [ "${bc}" == "${length}" ]; then
+                    inp="${inp}${key}"
+                else
+                    inp="${inp:0:${bc}}${key}${inp:${bc}}"
+                fi
+            fi
+            
+            cur_right
+            unset key
+        ;;
+        *)
+            break
+        ;;
+        esac
+    done
+}
+
+delete() {
+    case "$@" in
+    right)
+        bc2="$((bc+1))"
+        
+        ((bc > 0)) && {
+            inp="${inp:0:${bc}}${inp:${bc2}}"
+            }
+        
+        ((bc == 0)) && {
+            inp="${inp:1}"
+            }
+    ;;
+    left)
+        bc3="$((bc-1))"
+        
+        ((ac > 0)) && {
+            inp="${inp:0:${bc3}}${inp:${bc}}"
+            cur_left
+            }
+        
+        ((ac == 0)) && {
+            inp="${inp:0:${bc3}}"
+            }
+    ;;
+    esac
+}
+
+main() {
+    while true
+    do
+        show_line
+        
+        echo; echo;
+        ep2 "  Press "; ey2 "h"; ep " for help"
+        echo
+        
+        unset char k1 k2 k3
+        read -sN1 char
+        read -sN1 -t 0.0001 k1
+        read -sN1 -t 0.0001 k2
+        read -sN1 -t 0.0001 k3
+        char+="${k1}${k2}${k3}"
+        
+        case "${char}" in
+        $'\x7f')  #Backspace
+            echo "bacspace"; ((bc > 0)) && delete "left"
+        ;;
+        $'\x1b\x5b\x33\x7e')  #Delete
+            echo "delete"; ((ac > 0)) && delete "right"
+        ;;
+        $'\x1b\x5b\x41'|$'\x1b\x5b\x44')  #Up Arrow and Left Arrow
+            cur_left
+        ;;
+        $'\x1b\x5b\x42'|$'\x1b\x5b\x43')  #Down Arrow and Right Arrow
+            cur_right
+        ;;
+        a)
+            add
+        ;;
+        f|$'\x1b\x5b\x31\x7e')  #Home
+            cur_first
+        ;;
+        h)
+            cl
+            ep2 "  Up/Left: "; ew "previous character"
+            ep2 "  Down/Right: "; ew "next character"
+            ep2 "  backspace/delete: "; ew "delete previous/highlighted character"
+            ep2 "  a: "; ew "add something after highlighted character"
+            ep2 "  f/Home: "; ew "go back to first character"
+            ep2 "  h: "; ew "show help (current page)"
+            ep2 "  l/End: "; ew "go back to last character"
+            ep2 "  q: "; ew "quit"
+            echo; ey "  Press any key to continue..."; echo
+            IFS= read -r -n 1 -s key
+        ;;
+        l|$'\x1b\x5b\x34\x7e')  #End
+            cur_last
+        ;;
+        q)
+            break
+        ;;
+        esac
+    done
+}
+
+[[ -n "${inp}" ]] && main || add
+
+echo "${inp}" > "${temp_file}"
