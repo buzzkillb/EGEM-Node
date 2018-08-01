@@ -92,7 +92,7 @@ essentials(){
     echo
     sleep 3
     
-    up_ess || error "Install Node - necessary packages"
+    up_ess
     
     echo
     npm install -g pm2 || error "Install Node - pm2"
@@ -105,9 +105,14 @@ essentials(){
 
 up_ess() {
     if [ -n "$(lsb_release -r | grep 18)" ]; then
-        apt-get install -y build-essential screen git fail2ban ufw golang nodejs npm
+        apt-get install -y build-essential screen git fail2ban ufw golang nodejs npm || error "Install Node - necessary packages"
     else
-        apt-get install -y build-essential screen git fail2ban ufw golang-1.10 nodejs npm
+        if [ -n "$(which go)" ]; then
+            apt-get -y remove golang
+            apt-get -y autoremove
+        fi
+        
+        apt-get install -y build-essential screen git fail2ban ufw golang-1.10 nodejs npm || error "Install Node - necessary packages"
         ln -f -S /usr/lib/go-1.10/bin/go /usr/bin/go
     fi
 }
