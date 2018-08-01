@@ -1,10 +1,14 @@
 #!/bin/bash
 
 create_swap(){
-    swap_file = "/swapfile"
+    swap_file="/swapfile"
     
     if [ -n "$(grep swap /etc/fstab)" ]; then
-        echo "Looks like you already have swap file/partition."
+        echo
+        echo "Looks like you already have a swap file/partition."
+        echo "Skipping swap creation."
+        echo
+        sleep 3
     else
         fallocate -l 2G ${swap_file} || error "Create Swap - fallocate"
         chmod 600 ${swap_file}
