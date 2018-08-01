@@ -1,44 +1,5 @@
 #!/bin/bash
 
-dir_net_intel="${HOME}/egem-net-intelligence-api"
-dir_live_net="${HOME}/live-net"
-dir_go_egem="${HOME}/go-egem"
-
-cd ${HOME}
-
-while true
-do
-    clear
-    echo "===================================================="
-    echo "Egem Node Installer v2 (based on BuzzkillB's script)"
-    echo "===================================================="
-    echo
-    echo "1 - Install Egem Node with Swap File (2G size)"
-    echo "2 - Install Egem Node without Swap File"
-    echo "3 - Update Egem Node"
-    echo "q - exit this script"
-    echo -e "\n"
-    echo -e "Enter your selection \c"
-    read answer
-    
-    case ${answer} in
-    1)
-        create_swap && install_egem_node
-    ;;
-    2)
-        install_egem_node
-    ;;
-    3)
-        update_egem_node
-    ;;
-    q)
-        exit
-    ;;
-    esac
-    echo -e "Enter return to continue \c"
-    read input
-done
-
 create_swap(){
     swap_file = "/swapfile"
     
@@ -251,3 +212,42 @@ error(){
     echo
     exit 1    
 }
+
+dir_net_intel="${HOME}/egem-net-intelligence-api"
+dir_live_net="${HOME}/live-net"
+dir_go_egem="${HOME}/go-egem"
+
+cd ${HOME}
+
+while true
+do
+    clear
+    echo "===================================================="
+    echo "Egem Node Installer v2 (based on BuzzkillB's script)"
+    echo "===================================================="
+    echo
+    echo "1 - Install Egem Node with Swap File (2G size)"
+    echo "2 - Install Egem Node without Swap File"
+    echo "3 - Update Egem Node"
+    echo "q - exit this script"
+    echo -e "\n"
+    echo -e "Enter your selection: \c"
+    read answer
+    
+    case ${answer} in
+    1)
+        create_swap && install_egem_node
+    ;;
+    2)
+        install_egem_node
+    ;;
+    3)
+        update_egem_node
+    ;;
+    q)
+        exit
+    ;;
+    esac
+    echo -e "Enter return to continue \c"
+    read input
+done
