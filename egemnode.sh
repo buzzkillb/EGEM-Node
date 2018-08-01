@@ -110,9 +110,11 @@ up_ess() {
             apt-get -y autoremove
         fi
         
-        apt-get install -y build-essential screen git fail2ban ufw golang-1.10 nodejs npm || error "Install Node - necessary packages"
+        apt-get install -y build-essential screen git fail2ban ufw golang-1.10 nodejs-legacy npm || error "Install Node - necessary packages"
         
         ln -f /usr/lib/go-1.10/bin/go /usr/bin/go
+        
+        #ln -fs /usr/bin/nodejs /usr/bin/node
         
         #echo 'export GOPATH=${HOME}/go' >> ${HOME}/.bashrc
         #echo 'export PATH=${PATH}:${GOPATH}/bin' >> ${HOME}/.bashrc
@@ -204,11 +206,13 @@ net_intel_install(){
     echo "What is your node's contact details? (Example: Twitter:@TeamEGEM):"
     read contactdetails
     
-    sed -i '17s/.*/      "INSTANCE_NAME"   : '"'$nodename'"',/' ${dir_net_intel}/app.json
-    sed -i '18s/.*/      "CONTACT_DETAILS" : '"'$contactdetails'"',/' ${dir_net_intel}/app.json
-    sed "s/'/\"/g" ${dir_net_intel}/app.json
+    cd ${dir_net_intel}
     
-    cd ${dir_net_intel} && npm install || error "Install Node - net-intel install"
+    sed -i '17s/.*/      "INSTANCE_NAME"   : '"'$nodename'"',/' app.json
+    sed -i '18s/.*/      "CONTACT_DETAILS" : '"'$contactdetails'"',/' app.json
+    sed "s/'/\"/g" app.json
+    
+    npm install || error "Install Node - net-intel install"
 }
 
 start_net_intel(){
@@ -246,6 +250,7 @@ do
     echo "1 - Install Egem Node with Swap File (2G size)"
     echo "2 - Install Egem Node without Swap File"
     echo "3 - Update Egem Node"
+    echo "4 - Just start Egem Node (if installed but not working)"
     echo "q - exit this script"
     echo -e "\n"
     echo -e "Enter your selection: \c"
@@ -261,10 +266,14 @@ do
     3)
         update_egem_node
     ;;
+    4)
+        start_go_egem
+    ;;
     q)
         exit
     ;;
     esac
     echo -e "Enter return to continue \c"
+    echo
     read input
 done
