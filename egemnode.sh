@@ -104,7 +104,7 @@ essentials(){
 }
 
 up_ess() {
-    apt-get install -y build-essential screen git curl fail2ban ufw golang nodejs npm
+    apt-get install -y build-essential screen git fail2ban ufw golang nodejs npm
 }
 
 fw_conf(){
@@ -139,7 +139,7 @@ livenet_data(){
     mkdir -p ${dir_live_net}
 
     cd ${dir_live_net}
-    wget https://raw.githubusercontent.com/TeamEGEM/EGEM-Bootnodes/master/static-nodes.json || error "Install Node - live network data download"
+    wget --no-check-certificate https://raw.githubusercontent.com/TeamEGEM/EGEM-Bootnodes/master/static-nodes.json || error "Install Node - live network data download"
 }
 
 go_egem_install(){
