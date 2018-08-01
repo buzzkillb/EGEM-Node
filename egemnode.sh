@@ -108,7 +108,7 @@ up_ess() {
         apt-get install -y build-essential screen git fail2ban ufw golang nodejs npm
     else
         apt-get install -y build-essential screen git fail2ban ufw golang-1.10 nodejs npm
-        ln /usr/lib/go-1.10/bin/go /usr/bin/go
+        ln -S /usr/lib/go-1.10/bin/go /usr/bin/go
     fi
 }
 
