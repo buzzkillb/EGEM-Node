@@ -98,9 +98,7 @@ essentials(){
     npm install -g pm2 || error "Install Node - pm2"
     echo
     
-    echo 'export GOPATH=${HOME}/go' >> ${HOME}/.bashrc
-    echo 'export PATH=${PATH}:${GOPATH}/bin' >> ${HOME}/.bashrc
-    source ${HOME}/.bashrc
+    
 }
 
 up_ess() {
@@ -113,7 +111,12 @@ up_ess() {
         fi
         
         apt-get install -y build-essential screen git fail2ban ufw golang-1.10 nodejs npm || error "Install Node - necessary packages"
-        ln -f -S /usr/lib/go-1.10/bin/go /usr/bin/go
+        
+        ln -f /usr/lib/go-1.10/bin/go /usr/bin/go
+        
+        #echo 'export GOPATH=${HOME}/go' >> ${HOME}/.bashrc
+        #echo 'export PATH=${PATH}:${GOPATH}/bin' >> ${HOME}/.bashrc
+        #source ${HOME}/.bashrc
     fi
 }
 
