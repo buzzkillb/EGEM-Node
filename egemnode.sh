@@ -104,7 +104,12 @@ essentials(){
 }
 
 up_ess() {
-    apt-get install -y build-essential screen git fail2ban ufw golang nodejs npm
+    if [ -n "$(lsb_release -r | grep 18)" ]; then
+        apt-get install -y build-essential screen git fail2ban ufw golang nodejs npm
+    else
+        apt-get install -y build-essential screen git fail2ban ufw golang-1.10 nodejs npm
+        ln /usr/lib/go-1.10/bin/go /usr/bin/go
+    fi
 }
 
 fw_conf(){
