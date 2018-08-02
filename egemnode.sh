@@ -258,6 +258,8 @@ do
     echo -n "Enter your selection: "
     read answer
     
+    echo; echo
+    
     case ${answer} in
     1)
         create_swap && install_egem_node
@@ -284,7 +286,11 @@ do
         exit
     ;;
     esac
+    
+    echo
+    echo "-------------------------------------------------------------------"
     echo "Press Enter to continue"
+    echo "-------------------------------------------------------------------"
     echo
     read input
 done
