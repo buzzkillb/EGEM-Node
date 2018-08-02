@@ -10,12 +10,12 @@ create_swap(){
         echo
         sleep 3
     else
-        sudo fallocate -l 2G ${swap_file} || error "Create Swap - fallocate"
-        sudo chmod 600 ${swap_file}
-        sudo mkswap ${swap_file} || error "Create Swap - mkswap"
-        sudo swapon ${swap_file} || error "Create Swap - swapon"
+        fallocate -l 2G ${swap_file} || error "Create Swap - fallocate"
+        chmod 600 ${swap_file}
+        mkswap ${swap_file} || error "Create Swap - mkswap"
+        swapon ${swap_file} || error "Create Swap - swapon"
         
-        echo "${swap_file} none swap sw 0 0" | sudo tee -a /etc/fstab
+        echo "${swap_file} none swap sw 0 0" | tee -a /etc/fstab
     fi
 }
 
@@ -58,10 +58,10 @@ add_repos(){
     echo
     sleep 3
     
-    sudo add-apt-repository main
-    sudo add-apt-repository universe
-    sudo add-apt-repository restricted
-    sudo add-apt-repository multiverse
+    add-apt-repository main
+    add-apt-repository universe
+    add-apt-repository restricted
+    add-apt-repository multiverse
 }
 
 update_system(){
@@ -81,7 +81,7 @@ update_system(){
 }
 
 up_sys(){
-    sudo apt-get update && sudo apt-get upgrade -y && sudo apt-get -f install
+    apt-get update && apt-get upgrade -y && apt-get -f install
 }
 
 essentials(){
@@ -95,29 +95,29 @@ essentials(){
     up_ess
     
     echo
-    sudo npm install -g pm2 || error "Install Node - pm2"
+    npm install -g pm2 || error "Install Node - pm2"
     echo
 }
 
 up_ess() {
     if [ -z "$(which curl)" ]; then
-        sudo apt-get install -y curl
+        apt-get install -y curl
     fi
     
     curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
     
-    sudo apt-get install -y build-essential screen git fail2ban ufw golang nodejs || error "Install Node - necessary packages"
+    apt-get install -y build-essential screen git fail2ban ufw golang nodejs || error "Install Node - necessary packages"
     
     if [ -n "$(lsb_release -r | grep 18)" ]; then
-        sudo apt-get install -y golang || error "Install Node - golang package"
+        apt-get install -y golang || error "Install Node - golang package"
     else
         if [ -n "$(which go)" ]; then
-            sudo apt-get -y remove golang
-            sudo apt-get -y autoremove
+            apt-get -y remove golang
+            apt-get -y autoremove
         fi
         
-        sudo apt-get install -y golang-1.10 || error "Install Node - golang-1.10 package"
-        sudo ln -f /usr/lib/go-1.10/bin/go /usr/bin/go
+        apt-get install -y golang-1.10 || error "Install Node - golang-1.10 package"
+        ln -f /usr/lib/go-1.10/bin/go /usr/bin/go
     fi
 }
 
@@ -211,7 +211,7 @@ net_intel_install(){
     sed -i '18s/.*/      "CONTACT_DETAILS" : '"'$contactdetails'"',/' app.json
     sed "s/'/\"/g" app.json
     
-    sudo npm install || error "Install Node - net-intel install"
+    npm install || error "Install Node - net-intel install"
 }
 
 start_net_intel(){
@@ -253,6 +253,9 @@ do
     echo "5 - Stop Egem Node (go-egem)"
     echo "6 - Start Network-Intelligence (node-app)"
     echo "7 - Stop Network-Intelligence (node-app)"
+    echo "8 - How do I check if my node is running?"
+    echo "9 - What is next? What do I need to do?"
+    echo
     echo "q - exit this script"
     echo
     echo -n "Enter your selection: "
@@ -281,7 +284,50 @@ do
     ;;
     7)
         pm2 stop node-app
-    ;; 
+    ;;
+    8)
+        echo
+        echo "-------------------------------------------------------------------"
+        echo
+        echo "Your node has 2 working parts: go-egem and network-intelligence app"
+        echo "go-egem is the actual node, network-intelligence part just sends stats to network.egem.io"
+        echo
+        echo "To check go-egem:"
+        echo "screen -r go-egem"
+        echo
+        echo "If go-egem is running, you should see a lot of info flowing on the screen."
+        echo
+        echo "To quit that screen:"
+        echo "press  Ctrl + A  and  Ctrl + D"
+        echo
+        echo "To check network-intelligence:"
+        echo "pm2 status"
+        echo
+        echo "If app is running, you should see a table where 'node-app' is listed and says 'online'"
+        echo
+        echo "-------------------------------------------------------------------"
+        echo
+    ;;
+    9)
+        echo
+        echo "-------------------------------------------------------------------"
+        echo
+        echo "If setup has completed without errors, your node must be up and running."
+        echo "Now go to EGEM Discord, #node-owners channel."
+        echo
+        echo "Run these commands:"
+        echo "/botreg YourWalletAddress"
+        echo "/changeip YourVpsIP"
+        echo
+        echo "Last step is asking Riddlez to complete your registration."
+        echo
+        echo "PS: Make sure you have the necessary balance in your wallet."
+        echo
+        echo "Happy earnings Node Owner! ^^"
+        echo
+        echo "-------------------------------------------------------------------"
+        echo
+    ;;
     q)
         exit
     ;;
