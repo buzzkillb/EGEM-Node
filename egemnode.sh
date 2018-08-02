@@ -270,7 +270,7 @@ do
     echo -n " Enter your selection: "
     read answer
     
-    echo; echo
+    clear; echo; echo
     
     case ${answer} in
     1)
