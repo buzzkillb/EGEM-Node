@@ -108,7 +108,7 @@ up_ess() {
     
     curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
     
-    sudo apt-get install -y build-essential screen git fail2ban ufw golang nodejs npm || error "Install Node - necessary packages"
+    sudo apt-get install -y build-essential screen git fail2ban ufw golang nodejs || error "Install Node - necessary packages"
     
     if [ -n "$(lsb_release -r | grep 18)" ]; then
         sudo apt-get install -y golang || error "Install Node - golang package"
