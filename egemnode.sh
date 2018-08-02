@@ -97,8 +97,6 @@ essentials(){
     echo
     sudo npm install -g pm2 || error "Install Node - pm2"
     echo
-    
-    
 }
 
 up_ess() {
@@ -250,11 +248,14 @@ do
     echo
     echo "1 - Install Egem Node with Swap File (2G size)"
     echo "2 - Install Egem Node without Swap File"
-    echo "3 - Update Egem Node"
-    echo "4 - Just start Egem Node (if installed but not working)"
+    echo "3 - Update Egem Node (go-egem)"
+    echo "4 - Start Egem Node (go-egem) (if installed but stopped)"
+    echo "5 - Stop Egem Node (go-egem)"
+    echo "6 - Start Network-Intelligence (node-app)"
+    echo "7 - Stop Network-Intelligence (node-app)"
     echo "q - exit this script"
-    echo -e "\n"
-    echo -e "Enter your selection: \c"
+    echo
+    echo -n "Enter your selection: "
     read answer
     
     case ${answer} in
@@ -270,11 +271,20 @@ do
     4)
         start_go_egem
     ;;
+    5)
+        pkill screen
+    ;;
+    6)
+        pm2 start ${dir_net_intel}/app.json || error "Start network-intelligence"
+    ;;
+    7)
+        pm2 stop node-app
+    ;; 
     q)
         exit
     ;;
     esac
-    echo -e "Enter return to continue \c"
+    echo "Press Enter to continue"
     echo
     read input
 done
