@@ -36,6 +36,9 @@ install_egem_node(){
     echo "-------------------------------------------------------------------"
     echo "Setup comlete."
     echo "Your node should be listed on https://network.egem.io"
+    echo
+    echo "Don't forget to thank our hard working EGEM Devs for this so easy node experience."
+    echo
     echo "-------------------------------------------------------------------"
     echo
 }
@@ -242,23 +245,27 @@ cd ${HOME}
 while true
 do
     clear
-    echo "===================================================="
-    echo "Egem Node Installer v2 (based on BuzzkillB's script)"
-    echo "===================================================="
     echo
-    echo "1 - Install Egem Node with Swap File (2G size)"
-    echo "2 - Install Egem Node without Swap File"
-    echo "3 - Update Egem Node (go-egem)"
-    echo "4 - Start Egem Node (go-egem) (if installed but stopped)"
-    echo "5 - Stop Egem Node (go-egem)"
-    echo "6 - Start Network-Intelligence (node-app)"
-    echo "7 - Stop Network-Intelligence (node-app)"
-    echo "8 - How do I check if my node is running?"
-    echo "9 - What is next? What do I need to do?"
+    echo "======================================================"
+    echo " Egem Node Installer v2 (based on BuzzkillB's script) "
+    echo "======================================================"
     echo
-    echo "q - exit this script"
+    echo " 1 - Install Egem Node with Swap File (2G size)"
+    echo " 2 - Install Egem Node without Swap File"
+    echo " 3 - Update Egem Node (go-egem)"
     echo
-    echo -n "Enter your selection: "
+    echo " 4 - Start Egem Node (go-egem) (if installed but stopped)"
+    echo " 5 - Stop Egem Node (go-egem)"
+    echo " 6 - Start Network-Intelligence (node-app)"
+    echo " 7 - Stop Network-Intelligence (node-app)"
+    echo
+    echo " 8 - How do I check if my node is running?"
+    echo " 9 - What is next? What do I need to do?"
+    echo "10 - ROI of nodes?"
+    echo
+    echo " q - exit this script"
+    echo
+    echo -n " Enter your selection: "
     read answer
     
     echo; echo
@@ -324,6 +331,19 @@ do
         echo "PS: Make sure you have the necessary balance in your wallet."
         echo
         echo "Happy earnings Node Owner! ^^"
+        echo
+        echo "-------------------------------------------------------------------"
+        echo
+    ;;
+    10)
+        echo
+        echo "-------------------------------------------------------------------"
+        echo
+        echo "For detailed info about nodes go check this page:"
+        echo
+        echo "http://triforce.egem.io/egem.php"
+        echo
+        echo "Don't forget to thank BuzzkillB for that page."
         echo
         echo "-------------------------------------------------------------------"
         echo
