@@ -21,7 +21,15 @@ create_swap(){
 
 install_egem_node(){
     cd ${HOME}
-
+    
+    echo
+    echo "What woud you like to name your instance? (example -> TeamEGEM Node East Coast USA):"
+    read nodename
+    
+    echo
+    echo "What is your node's contact details? (example -> twitter: @TeamEGEM):"
+    read contactdetails
+    
     add_repos
     update_system
     essentials
@@ -35,10 +43,11 @@ install_egem_node(){
     echo
     echo "-------------------------------------------------------------------"
     echo "Setup comlete."
+    echo
     echo "Your node should be listed on https://network.egem.io"
     echo
-    echo "Don't forget to thank our hard working EGEM Devs for this so easy node experience."
-    echo
+    echo "Don't forget to thank our hard working EGEM Devs"
+    echo "for this so easy node experience."
     echo "-------------------------------------------------------------------"
     echo
 }
@@ -75,7 +84,8 @@ update_system(){
     echo
     sleep 3
     
-    echo "If you see a prompt about 'Grub Configuration', select keeping the currently installed version"
+    echo "If you see a prompt about 'Grub Configuration',"
+    echo "prefer keeping the currently installed version."
     echo
     echo
     sleep 5
@@ -199,14 +209,6 @@ net_intel_install(){
     
     rm -rf ${dir_net_intel}
     git clone https://github.com/TeamEGEM/egem-net-intelligence-api.git || error "Install Node - net-intel download"
-    
-    echo
-    echo "What woud you like to name your instance? (Example: TeamEGEM Node East Coast USA):"
-    read nodename
-    
-    echo
-    echo "What is your node's contact details? (Example: Twitter:@TeamEGEM):"
-    read contactdetails
     
     cd ${dir_net_intel}
     
@@ -338,13 +340,11 @@ do
     10)
         echo
         echo "-------------------------------------------------------------------"
-        echo
         echo "For detailed info about nodes go check this page:"
         echo
         echo "http://triforce.egem.io/egem.php"
         echo
         echo "Don't forget to thank BuzzkillB for that page."
-        echo
         echo "-------------------------------------------------------------------"
         echo
     ;;
