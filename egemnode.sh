@@ -267,8 +267,6 @@ auto_start(){
             echo "WantedBy=multi-user.target" >> ${service1}
             echo "" >> ${service1}
             
-            chmod +x ${service1}
-            
             cd /usr/bin/ && touch ${xone}
             
             echo "#!/bin/bash" >> ${xone}
@@ -303,8 +301,6 @@ auto_start(){
             echo "[Install]" >> ${service2}
             echo "WantedBy=multi-user.target" >> ${service2}
             echo "" >> ${service2}
-            
-            chmod +x ${service2}
             
             cd /usr/bin/ && touch ${xtwo}
             
