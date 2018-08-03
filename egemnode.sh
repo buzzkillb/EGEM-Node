@@ -57,7 +57,7 @@ install_egem_node(){
 
 update_egem_node(){
     echo
-    pkill screen
+    pkill egem
     cd ${dir_go_egem}
     make clean || error "Update Node - make clean"
     git pull || error "Update Node - git pull"
@@ -201,7 +201,7 @@ start_go_egem(){
     #if [ -f /etc/systemd/system/${servicefile} ]; then
     #    systemctl start ${servicefile} || error "Go-EGEM start"
     #else
-    #    screen -dmS go-egem ${dir_go_egem}/build/bin/egem --datadir ${dir_live_net}/ --maxpeers 100 --rpc || error "Go-EGEM start"
+    #    screen -dmUS go-egem ${dir_go_egem}/build/bin/egem --datadir ${dir_live_net}/ --maxpeers 100 --rpc || error "Go-EGEM start"
     #fi
     
     echo
@@ -252,7 +252,7 @@ run_now(){
         systemctl start ${servicefile} || warn "Go-EGEM start"
     ;;
     "node-app")
-        sudo env PATH=$PATH:/usr/local/bin pm2 startup -u root
+        env PATH=$PATH:/usr/local/bin pm2 startup -u root
         cd ${dir_net_intel}
         pm2 start app.json || warn "net-intel start"
     ;;
@@ -274,8 +274,7 @@ create_service(){
         echo "Restart=always" >> ${servicefile}
         echo "#RestartSec=5" >> ${servicefile}
         echo "ExecStart=${dir_go_egem}/build/bin/egem --datadir ${dir_live_net}/ --maxpeers 100 --rpc" >> ${servicefile}
-        echo "#ExecStop=/usr/bin/pkill screen" >> ${servicefile}
-        echo "#ExecStop=/usr/bin/pkill go-egem" >> ${servicefile}    
+        echo "#ExecStop=/usr/bin/pkill egem" >> ${servicefile}  
         echo "" >> ${servicefile}
         echo "[Install]" >> ${servicefile}
         echo "WantedBy=multi-user.target" >> ${servicefile}
@@ -319,10 +318,12 @@ do
     echo
     echo " 1 - Install Egem Node with Swap File (2G size)"
     echo " 2 - Install Egem Node without Swap File"
+    echo
     echo " 3 - Update Egem Node (go-egem)"
     echo
     echo " 4 - Start Egem Node (go-egem) (if installed but stopped)"
     echo " 5 - Stop Egem Node (go-egem)"
+    echo
     echo " 6 - Start Network-Intelligence (node-app)"
     echo " 7 - Stop Network-Intelligence (node-app)"
     echo
@@ -351,15 +352,13 @@ do
         start_go_egem
     ;;
     5)
-        pkill screen
-        pkill go-egem
+        pkill egem
     ;;
     6)
         start_net_intel
     ;;
     7)
         pkill pm2
-        pkill node
     ;;
     8)
         echo
@@ -374,7 +373,7 @@ do
         echo "If go-egem is running, you should see a lot of info flowing on the screen."
         echo
         echo "To quit that screen:"
-        echo "press  Ctrl + A  and  Ctrl + D"
+        echo "press  Ctrl + A  and  d"
         echo
         echo "To check network-intelligence:"
         echo "pm2 status"
