@@ -35,9 +35,9 @@ install_egem_node(){
     essentials
     fw_conf
     livenet_data
-    go_egem_install
+    install_go_egem
     start_go_egem
-    net_intel_install
+    install_net_intel
     start_net_intel
 
     echo
@@ -59,7 +59,8 @@ update_egem_node(){
     make clean || error "Update Node - make clean"
     git pull || error "Update Node - git pull"
     make all || error "Update Node - make all"
-    screen -dmS go-egem ${dir_go_egem}/build/bin/egem --datadir ${dir_live_net}/ --maxpeers 100 --rpc || error "Update Node - Go-EGEM start"
+    
+    auto_start "go-egem"
 }
 
 add_repos(){
@@ -169,7 +170,7 @@ livenet_data(){
     wget --no-check-certificate https://raw.githubusercontent.com/TeamEGEM/EGEM-Bootnodes/master/static-nodes.json || error "Install Node - live network data download"
 }
 
-go_egem_install(){
+install_go_egem(){
     echo
     echo "-------------------------------------------------------------------"
     echo "Installing Go-Egem"
@@ -192,7 +193,13 @@ start_go_egem(){
     echo
     sleep 3
     
-    screen -dmS go-egem ${dir_go_egem}/build/bin/egem --datadir ${dir_live_net}/ --maxpeers 100 --rpc || error "Install Node - Go-EGEM start"
+    auto_start "go-egem"
+    
+    #if [ -f /etc/systemd/system/${service1} ]; then
+    #    systemctl start ${service1} || error "Go-EGEM start"
+    #else
+    #    screen -dmS go-egem ${dir_go_egem}/build/bin/egem --datadir ${dir_live_net}/ --maxpeers 100 --rpc || error "Go-EGEM start"
+    #fi
     
     echo
     echo "Your node is syncronizing with network now. This may take some time."
@@ -200,7 +207,7 @@ start_go_egem(){
     sleep 3
 }
 
-net_intel_install(){
+install_net_intel(){
     echo
     echo "Installing EGEM Net-Intelligence"
     echo "(necessary for sending statistics to network.egem.io)"
@@ -227,8 +234,85 @@ start_net_intel(){
     echo
     sleep 3
     
-    cd ${dir_net_intel}
-    pm2 start app.json || error "Install Node - net-intel start"
+    auto_start "node-app"
+    
+    #if [ -f /etc/systemd/system/${service2} ]; then
+    #    systemctl start ${service2} || error "net-intel start"
+    #else
+    #    cd ${dir_net_intel} && pm2 start app.json || error "net-intel start"
+    #fi
+}
+
+auto_start(){
+    case $1 in
+    "go-egem")
+        if [ ! -f /etc/systemd/system/${service1} ]; then
+            cd /etc/systemd/system/
+            touch ${service1}
+            
+            echo "[Unit]" >> ${service1}
+            echo "Description=Go-EGEM Service" >> ${service1}
+            echo "" >> ${service1}
+            echo "[Service]" >> ${service1}
+            echo "User=root" >> ${service1}
+            echo "Type=simple" >> ${service1}
+            echo "TimeoutStartSec=15" >> ${service1}
+            echo "Restart=always" >> ${service1}
+            echo "RestartSec=5" >> ${service1}
+            echo "ExecStart=/usr/bin/${xone}" >> ${service1}
+            echo "ExecStop=/usr/bin/pkill screen" >> ${service1}
+            echo "ExecStop=/usr/bin/pkill go-egem" >> ${service1}    
+            echo "" >> ${service1}
+            echo "[Install]" >> ${service1}
+            echo "WantedBy=multi-user.target" >> ${service1}
+            echo "" >> ${service1}
+            
+            cd /usr/bin/ && touch ${xone}
+            
+            echo "#!/bin/bash" >> ${xone}
+            echo "" >> ${xone}
+            echo "screen -dmS go-egem ${dir_go_egem}/build/bin/egem --datadir ${dir_live_net}/ --maxpeers 100 --rpc" >> ${xone}
+            echo "" >> ${xone}
+        fi
+        
+        systemctl daemon-reload
+        systemctl enable ${service1}
+        systemctl start ${service1} || error "Go-EGEM start"
+    ;;
+    "node-app")
+        if [ ! -f /etc/systemd/system/${service2} ]; then
+            touch ${service2}
+            
+            echo "[Unit]" >> ${service2}
+            echo "Description=Node-App Service" >> ${service2}
+            echo "" >> ${service2}
+            echo "[Service]" >> ${service2}
+            echo "User=root" >> ${service2}
+            echo "Type=simple" >> ${service2}
+            echo "TimeoutStartSec=15" >> ${service2}
+            echo "Restart=always" >> ${service2}
+            echo "RestartSec=5" >> ${service2}
+            echo "ExecStart=/usr/bin/${xtwo}" >> ${service2}
+            echo "ExecStop=/usr/bin/pkill pm2" >> ${service2}
+            echo "ExecStop=/usr/bin/pkill node" >> ${service2}    
+            echo "" >> ${service2}
+            echo "[Install]" >> ${service2}
+            echo "WantedBy=multi-user.target" >> ${service2}
+            echo "" >> ${service2}
+            
+            cd /usr/bin/ && touch ${xtwo}
+            
+            echo "#!/bin/bash" >> ${xtwo}
+            echo "" >> ${xtwo}
+            echo "cd ${dir_net_intel} && pm2 start app.json" >> ${xtwo}
+            echo "" >> ${xtwo}
+        fi
+        
+        systemctl daemon-reload
+        systemctl enable ${service2}
+        systemctl start ${service2} || error "net-intel start"
+    ;;
+    esac 
 }
 
 error(){
@@ -241,6 +325,11 @@ error(){
 dir_net_intel="${HOME}/egem-net-intelligence-api"
 dir_live_net="${HOME}/live-net"
 dir_go_egem="${HOME}/go-egem"
+
+service1="goegem.service"
+service2="nodeapp.service"
+xone="goegem"
+xtwo="nodeapp"
 
 cd ${HOME}
 
@@ -287,12 +376,14 @@ do
     ;;
     5)
         pkill screen
+        pkill go-egem
     ;;
     6)
-        pm2 start ${dir_net_intel}/app.json || error "Start network-intelligence"
+        start_net_intel
     ;;
     7)
-        pm2 stop node-app
+        pkill pm2
+        pkill node
     ;;
     8)
         echo
