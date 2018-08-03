@@ -247,8 +247,7 @@ auto_start(){
     case $1 in
     "go-egem")
         if [ ! -f /etc/systemd/system/${service1} ]; then
-            cd /etc/systemd/system/
-            touch ${service1}
+            cd /etc/systemd/system/ && touch ${service1}
             
             echo "[Unit]" >> ${service1}
             echo "Description=Go-EGEM Service" >> ${service1}
@@ -256,12 +255,12 @@ auto_start(){
             echo "[Service]" >> ${service1}
             echo "User=root" >> ${service1}
             echo "Type=simple" >> ${service1}
-            echo "TimeoutStartSec=15" >> ${service1}
+            echo "#TimeoutStartSec=15" >> ${service1}
             echo "Restart=always" >> ${service1}
-            echo "RestartSec=5" >> ${service1}
+            echo "#RestartSec=5" >> ${service1}
             echo "ExecStart=/usr/bin/${xone}" >> ${service1}
-            echo "ExecStop=/usr/bin/pkill screen" >> ${service1}
-            echo "ExecStop=/usr/bin/pkill go-egem" >> ${service1}    
+            echo "#ExecStop=/usr/bin/pkill screen" >> ${service1}
+            echo "#ExecStop=/usr/bin/pkill go-egem" >> ${service1}    
             echo "" >> ${service1}
             echo "[Install]" >> ${service1}
             echo "WantedBy=multi-user.target" >> ${service1}
@@ -278,6 +277,7 @@ auto_start(){
         fi
         
         systemctl daemon-reload
+        systemctl disable ${service1}
         systemctl enable ${service1}
         systemctl start ${service1} || error "Go-EGEM start"
     ;;
@@ -291,12 +291,12 @@ auto_start(){
             echo "[Service]" >> ${service2}
             echo "User=root" >> ${service2}
             echo "Type=simple" >> ${service2}
-            echo "TimeoutStartSec=15" >> ${service2}
+            echo "#TimeoutStartSec=15" >> ${service2}
             echo "Restart=always" >> ${service2}
-            echo "RestartSec=5" >> ${service2}
+            echo "#RestartSec=5" >> ${service2}
             echo "ExecStart=/usr/bin/${xtwo}" >> ${service2}
-            echo "ExecStop=/usr/bin/pkill pm2" >> ${service2}
-            echo "ExecStop=/usr/bin/pkill node" >> ${service2}    
+            echo "#ExecStop=/usr/bin/pkill pm2" >> ${service2}
+            echo "#ExecStop=/usr/bin/pkill node" >> ${service2}    
             echo "" >> ${service2}
             echo "[Install]" >> ${service2}
             echo "WantedBy=multi-user.target" >> ${service2}
@@ -313,6 +313,7 @@ auto_start(){
         fi
         
         systemctl daemon-reload
+        systemctl disable ${service2}
         systemctl enable ${service2}
         systemctl start ${service2} || error "net-intel start"
     ;;
