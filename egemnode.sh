@@ -267,12 +267,16 @@ auto_start(){
             echo "WantedBy=multi-user.target" >> ${service1}
             echo "" >> ${service1}
             
+            chmod +x ${service1}
+            
             cd /usr/bin/ && touch ${xone}
             
             echo "#!/bin/bash" >> ${xone}
             echo "" >> ${xone}
             echo "screen -dmS go-egem ${dir_go_egem}/build/bin/egem --datadir ${dir_live_net}/ --maxpeers 100 --rpc" >> ${xone}
             echo "" >> ${xone}
+            
+            chmod +x ${xone}
         fi
         
         systemctl daemon-reload
@@ -300,12 +304,16 @@ auto_start(){
             echo "WantedBy=multi-user.target" >> ${service2}
             echo "" >> ${service2}
             
+            chmod +x ${service2}
+            
             cd /usr/bin/ && touch ${xtwo}
             
             echo "#!/bin/bash" >> ${xtwo}
             echo "" >> ${xtwo}
             echo "cd ${dir_net_intel} && pm2 start app.json" >> ${xtwo}
             echo "" >> ${xtwo}
+            
+            chmod +x ${xtwo}
         fi
         
         systemctl daemon-reload
