@@ -365,20 +365,22 @@ do
         echo "-------------------------------------------------------------------"
         echo
         echo "Your node has 2 working parts: go-egem and network-intelligence app"
-        echo "go-egem is the actual node, network-intelligence part just sends stats to network.egem.io"
+        echo
+        echo "go-egem --->>> the actual node"
+        echo "network-intelligence --->>> sends stats to https://network.egem.io"
         echo
         echo "To check go-egem:"
-        echo "screen -r go-egem"
+        echo "ps x | grep go-egem"
         echo
-        echo "If go-egem is running, you should see a lot of info flowing on the screen."
+        echo "If go-egem is running, you should see this path on the screen:"
+        echo "${dir_go_egem}/build/bin/egem"
         echo
-        echo "To quit that screen:"
-        echo "press  Ctrl + A  and  d"
         echo
         echo "To check network-intelligence:"
         echo "pm2 status"
         echo
-        echo "If app is running, you should see a table where 'node-app' is listed and says 'online'"
+        echo "If app is running, you should see a table"
+        echo "where 'node-app' is listed and says 'online'"
         echo
         echo "-------------------------------------------------------------------"
         echo
@@ -387,7 +389,9 @@ do
         echo
         echo "-------------------------------------------------------------------"
         echo
-        echo "If setup has completed without errors, your node must be up and running."
+        echo "If setup has completed without errors, your node should be up"
+        echo "and running."
+        echo
         echo "Now go to EGEM Discord, #node-owners channel."
         echo
         echo "Run these commands:"
