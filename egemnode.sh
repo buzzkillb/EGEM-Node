@@ -57,13 +57,15 @@ install_egem_node(){
 
 update_egem_node(){
     echo
-    pkill egem
+    
+    systemctl stop ${servicefile}
+    
     cd ${dir_go_egem}
     make clean || error "Update Node - make clean"
     git pull || error "Update Node - git pull"
     make all || error "Update Node - make all"
     
-    run_now "go-egem"
+    systemctl start ${servicefile} || warn "Go-EGEM start"
 }
 
 add_repos(){
@@ -196,13 +198,7 @@ start_go_egem(){
     echo
     sleep 3
     
-    run_now "go-egem"
-    
-    #if [ -f /etc/systemd/system/${servicefile} ]; then
-    #    systemctl start ${servicefile} || error "Go-EGEM start"
-    #else
-    #    screen -dmUS go-egem ${dir_go_egem}/build/bin/egem --datadir ${dir_live_net}/ --maxpeers 100 --rpc || error "Go-EGEM start"
-    #fi
+    systemctl start ${servicefile} || warn "Go-EGEM start"
     
     echo
     echo "Your node is syncronizing with network now. This may take some time."
@@ -237,26 +233,9 @@ start_net_intel(){
     echo
     sleep 3
     
-    run_now "node-app"
-    
-    #if [ -f /etc/systemd/system/${service2} ]; then
-    #    systemctl start ${service2} || error "net-intel start"
-    #else
-    #    cd ${dir_net_intel} && pm2 start app.json || error "net-intel start"
-    #fi
-}
-
-run_now(){
-    case $1 in
-    "go-egem")
-        systemctl start ${servicefile} || warn "Go-EGEM start"
-    ;;
-    "node-app")
-        env PATH=$PATH:/usr/local/bin pm2 startup -u root
-        cd ${dir_net_intel}
-        pm2 start app.json || warn "net-intel start"
-    ;;
-    esac
+    env PATH=$PATH:/usr/local/bin pm2 startup -u root
+    cd ${dir_net_intel}
+    pm2 start app.json || warn "net-intel start"
 }
 
 create_service(){
@@ -352,13 +331,13 @@ do
         start_go_egem
     ;;
     5)
-        pkill egem
+        systemctl stop ${servicefile}
     ;;
     6)
         start_net_intel
     ;;
     7)
-        pkill pm2
+        pm2 kill
     ;;
     8)
         echo
