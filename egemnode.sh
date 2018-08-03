@@ -37,7 +37,7 @@ install_egem_node(){
     livenet_data
     install_go_egem
     install_net_intel
-    create_services
+    create_service
     start_go_egem
     start_net_intel
     
@@ -198,8 +198,8 @@ start_go_egem(){
     
     run_now "go-egem"
     
-    #if [ -f /etc/systemd/system/${service1} ]; then
-    #    systemctl start ${service1} || error "Go-EGEM start"
+    #if [ -f /etc/systemd/system/${servicefile} ]; then
+    #    systemctl start ${servicefile} || error "Go-EGEM start"
     #else
     #    screen -dmS go-egem ${dir_go_egem}/build/bin/egem --datadir ${dir_live_net}/ --maxpeers 100 --rpc || error "Go-EGEM start"
     #fi
@@ -249,84 +249,42 @@ start_net_intel(){
 run_now(){
     case $1 in
     "go-egem")
-        systemctl start ${service1} || warn "Go-EGEM start"
+        systemctl start ${servicefile} || warn "Go-EGEM start"
     ;;
     "node-app")
-        systemctl start ${service2} || warn "net-intel start"
+        sudo env PATH=$PATH:/usr/local/bin pm2 startup -u root
+        cd ${dir_net_intel}
+        pm2 start app.json || warn "net-intel start"
     ;;
     esac
 }
 
-create_services(){
-    if [ ! -f /etc/systemd/system/${service1} ]; then
-        cd /etc/systemd/system/ && touch ${service1}
+create_service(){
+    if [ ! -f /etc/systemd/system/${servicefile} ]; then
+        cd /etc/systemd/system/ && touch ${servicefile}
         
-        echo "[Unit]" >> ${service1}
-        echo "Description=Go-EGEM Service" >> ${service1}
-        echo "" >> ${service1}
-        echo "[Service]" >> ${service1}
-        echo "User=root" >> ${service1}
-        echo "Type=simple" >> ${service1}
-        echo "#TimeoutStartSec=15" >> ${service1}
-        echo "Restart=always" >> ${service1}
-        echo "#RestartSec=5" >> ${service1}
-        echo "ExecStart=/usr/bin/${xone}" >> ${service1}
-        echo "#ExecStop=/usr/bin/pkill screen" >> ${service1}
-        echo "#ExecStop=/usr/bin/pkill go-egem" >> ${service1}    
-        echo "" >> ${service1}
-        echo "[Install]" >> ${service1}
-        echo "WantedBy=multi-user.target" >> ${service1}
-        echo "" >> ${service1}
-        
-        cd /usr/bin/ && touch ${xone}
-        
-        echo "#!/bin/bash" >> ${xone}
-        echo "" >> ${xone}
-        echo "screen -dmS go-egem ${dir_go_egem}/build/bin/egem --datadir ${dir_live_net}/ --maxpeers 100 --rpc" >> ${xone}
-        echo "" >> ${xone}
-        
-        chmod +x ${xone}
+        echo "[Unit]" >> ${servicefile}
+        echo "Description=Go-EGEM Service" >> ${servicefile}
+        echo "After=network-online.target" >> ${servicefile}
+        echo "" >> ${servicefile}
+        echo "[Service]" >> ${servicefile}
+        echo "User=root" >> ${servicefile}
+        echo "Type=simple" >> ${servicefile}
+        echo "#TimeoutStartSec=15" >> ${servicefile}
+        echo "Restart=always" >> ${servicefile}
+        echo "#RestartSec=5" >> ${servicefile}
+        echo "ExecStart=${dir_go_egem}/build/bin/egem --datadir ${dir_live_net}/ --maxpeers 100 --rpc" >> ${servicefile}
+        echo "#ExecStop=/usr/bin/pkill screen" >> ${servicefile}
+        echo "#ExecStop=/usr/bin/pkill go-egem" >> ${servicefile}    
+        echo "" >> ${servicefile}
+        echo "[Install]" >> ${servicefile}
+        echo "WantedBy=multi-user.target" >> ${servicefile}
+        echo "" >> ${servicefile}
     fi
     
     systemctl daemon-reload
-    systemctl disable ${service1}
-    systemctl enable ${service1}
-    
-    
-    
-    if [ ! -f /etc/systemd/system/${service2} ]; then
-        touch ${service2}
-        
-        echo "[Unit]" >> ${service2}
-        echo "Description=Node-App Service" >> ${service2}
-        echo "" >> ${service2}
-        echo "[Service]" >> ${service2}
-        echo "User=root" >> ${service2}
-        echo "Type=simple" >> ${service2}
-        echo "#TimeoutStartSec=15" >> ${service2}
-        echo "Restart=always" >> ${service2}
-        echo "#RestartSec=5" >> ${service2}
-        echo "ExecStart=/usr/bin/${xtwo}" >> ${service2}
-        echo "#ExecStop=/usr/bin/pkill pm2" >> ${service2}
-        echo "#ExecStop=/usr/bin/pkill node" >> ${service2}    
-        echo "" >> ${service2}
-        echo "[Install]" >> ${service2}
-        echo "WantedBy=multi-user.target" >> ${service2}
-        echo "" >> ${service2}
-        
-        cd /usr/bin/ && touch ${xtwo}
-        
-        echo "#!/bin/bash" >> ${xtwo}
-        echo "" >> ${xtwo}
-        echo "cd ${dir_net_intel} && pm2 start app.json" >> ${xtwo}
-        echo "" >> ${xtwo}
-        
-        chmod +x ${xtwo}
-    fi
-    
-    systemctl daemon-reload
-    systemctl disable ${service2}
-    systemctl enable ${service2}
+    systemctl disable ${servicefile}
+    systemctl enable ${servicefile}
 }
 
 error(){
@@ -347,10 +305,7 @@ dir_net_intel="${HOME}/egem-net-intelligence-api"
 dir_live_net="${HOME}/live-net"
 dir_go_egem="${HOME}/go-egem"
 
-service1="goegem.service"
-service2="nodeapp.service"
-xone="goegem"
-xtwo="nodeapp"
+servicefile="egem.service"
 
 cd ${HOME}
 
