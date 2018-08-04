@@ -23,11 +23,11 @@ install_egem_node(){
     cd ${HOME}
     
     echo
-    echo "What woud you like to name your instance? (example -> TeamEGEM Node East Coast USA):"
+    echo "What would you like to name your instance? (example -> TeamEGEM Node - East Coast USA):"
     read nodename
     
     echo
-    echo "What is your node's contact details? (example -> twitter: @TeamEGEM):"
+    echo "How can developers contact you? (example -> Discord: @TeamEGEM):"
     read contactdetails
     
     add_repos
@@ -55,19 +55,6 @@ install_egem_node(){
     echo
 }
 
-update_egem_node(){
-    echo
-    
-    systemctl stop ${servicefile}
-    
-    cd ${dir_go_egem}
-    make clean || error "Update Node - make clean"
-    git pull || error "Update Node - git pull"
-    make all || error "Update Node - make all"
-    
-    systemctl start ${servicefile} || warn "Go-EGEM start"
-}
-
 add_repos(){
     echo
     echo "-------------------------------------------------------------------"
@@ -76,10 +63,18 @@ add_repos(){
     echo
     sleep 3
     
+    if [ -z "$(which add-apt-repository)" ]; then
+        echo
+        apt-get install -y software-properties-common
+        echo
+    fi
+    
     add-apt-repository main
     add-apt-repository universe
     add-apt-repository restricted
     add-apt-repository multiverse
+    
+    [ -z "$(apt-cache search golang-1.10)" ] && add-apt-repository ppa:gophers/archive
 }
 
 update_system(){
@@ -96,11 +91,7 @@ update_system(){
     echo
     sleep 5
     
-    up_sys || error "Install Node - system update"
-}
-
-up_sys(){
-    apt-get update && apt-get upgrade -y && apt-get -f install
+    { apt-get update && apt-get upgrade -y && apt-get -f install; } || error "Install Node - system update"
 }
 
 essentials(){
@@ -111,33 +102,15 @@ essentials(){
     echo
     sleep 3
     
-    up_ess
-    
-    echo
-    npm install -g pm2 || error "Install Node - pm2"
-    echo
-}
-
-up_ess() {
-    if [ -z "$(which curl)" ]; then
-        apt-get install -y curl
-    fi
-    
+    [ -z "$(which curl)" ] && { apt-get install -y curl || error "Install Node - curl"; }
     curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
     
-    apt-get install -y build-essential screen git fail2ban ufw golang nodejs || error "Install Node - necessary packages"
+    [ -n "$(which go)" ] && apt-get -y remove golang && apt-get -y autoremove
+    apt-get install -y build-essential screen git fail2ban ufw golang-1.10 nodejs || error "Install Node - necessary packages"
     
-    if [ -n "$(lsb_release -r | grep 18)" ]; then
-        apt-get install -y golang || error "Install Node - golang package"
-    else
-        if [ -n "$(which go)" ]; then
-            apt-get -y remove golang
-            apt-get -y autoremove
-        fi
-        
-        apt-get install -y golang-1.10 || error "Install Node - golang-1.10 package"
-        ln -f /usr/lib/go-1.10/bin/go /usr/bin/go
-    fi
+    ln -f /usr/lib/go-1.10/bin/go /usr/bin/go
+    
+    echo; npm install -g pm2 || error "Install Node - pm2"; echo
 }
 
 fw_conf(){
@@ -239,30 +212,45 @@ start_net_intel(){
 }
 
 create_service(){
-    if [ ! -f /etc/systemd/system/${servicefile} ]; then
-        cd /etc/systemd/system/ && touch ${servicefile}
-        
-        echo "[Unit]" >> ${servicefile}
-        echo "Description=Go-EGEM Service" >> ${servicefile}
-        echo "After=network-online.target" >> ${servicefile}
-        echo "" >> ${servicefile}
-        echo "[Service]" >> ${servicefile}
-        echo "User=root" >> ${servicefile}
-        echo "Type=simple" >> ${servicefile}
-        echo "#TimeoutStartSec=15" >> ${servicefile}
-        echo "Restart=always" >> ${servicefile}
-        echo "#RestartSec=5" >> ${servicefile}
-        echo "ExecStart=${dir_go_egem}/build/bin/egem --datadir ${dir_live_net}/ --maxpeers 100 --rpc" >> ${servicefile}
-        echo "#ExecStop=/usr/bin/pkill egem" >> ${servicefile}  
-        echo "" >> ${servicefile}
-        echo "[Install]" >> ${servicefile}
-        echo "WantedBy=multi-user.target" >> ${servicefile}
-        echo "" >> ${servicefile}
-    fi
+    cd /etc/systemd/system/
+    
+    [ -f ${servicefile} ] && rm -rf ${servicefile}
+    
+    touch ${servicefile}
+    
+    echo "[Unit]" >> ${servicefile}
+    echo "Description=Go-EGEM Service" >> ${servicefile}
+    echo "After=network-online.target" >> ${servicefile}
+    echo "" >> ${servicefile}
+    echo "[Service]" >> ${servicefile}
+    echo "User=root" >> ${servicefile}
+    echo "Type=simple" >> ${servicefile}
+    echo "#TimeoutStartSec=15" >> ${servicefile}
+    echo "Restart=always" >> ${servicefile}
+    echo "#RestartSec=5" >> ${servicefile}
+    echo "ExecStart=${dir_go_egem}/build/bin/egem --datadir ${dir_live_net}/ --maxpeers 100 --rpc" >> ${servicefile}
+    echo "#ExecStop=/usr/bin/pkill egem" >> ${servicefile}  
+    echo "" >> ${servicefile}
+    echo "[Install]" >> ${servicefile}
+    echo "WantedBy=multi-user.target" >> ${servicefile}
+    echo "" >> ${servicefile}
     
     systemctl daemon-reload
     systemctl disable ${servicefile}
     systemctl enable ${servicefile}
+}
+
+update_egem_node(){
+    echo
+    
+    systemctl stop ${servicefile}
+    
+    cd ${dir_go_egem}
+    make clean || error "Update Node - make clean"
+    git pull || error "Update Node - git pull"
+    make all || error "Update Node - make all"
+    
+    systemctl start ${servicefile} || warn "Go-EGEM start"
 }
 
 error(){
@@ -308,7 +296,7 @@ do
     echo
     echo " 8 - How do I check if my node is running?"
     echo " 9 - What is next? What do I need to do?"
-    echo "10 - ROI of nodes?"
+    echo "10 - What is the ROI of a masternode?"
     echo
     echo " q - exit this script"
     echo
@@ -391,7 +379,7 @@ do
         echo "-------------------------------------------------------------------"
         echo "For detailed info about nodes go check this page:"
         echo
-        echo "http://triforce.egem.io/egem.php"
+        echo "http://triforce.egem.io/egem/"
         echo
         echo "Don't forget to thank BuzzkillB for that page."
         echo "-------------------------------------------------------------------"
