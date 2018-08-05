@@ -268,7 +268,7 @@ warn(){
 }
 
 dir_net_intel="${HOME}/egem-net-intelligence-api"
-dir_live_net="${HOME}/live-net"
+dir_live_net="${HOME}/live-net/egem/"
 dir_go_egem="${HOME}/go-egem"
 
 servicefile="egem.service"
