@@ -25,10 +25,17 @@ create_swap(){
         swap_needed=2048
     fi
     
-    if (( ${swap_needed} == 0 )); then
+    if [ "${swap_needed}" == 0 ]; then
         echo
         echo "Looks like you already have 2GB (total) swap file/partition."
         echo "Skipping swap creation."
+        echo
+        sleep 3
+    else
+        echo
+        echo "-------------------------------------------------------------------"
+        echo "Swap file with ${swap_needed} MB size will be created..."
+        echo "-------------------------------------------------------------------"
         echo
         sleep 3
         
