@@ -41,10 +41,17 @@ create_swap(){
         echo
         sleep 5
         
+        swapoff ${swap_file}
+        rm -rf ${swap_file}
+        
         fallocate -l ${swap_needed}M ${swap_file} || error "Create Swap - fallocate"
         chmod 600 ${swap_file}
         mkswap ${swap_file} || error "Create Swap - mkswap"
         swapon ${swap_file} || error "Create Swap - swapon"
+        
+        if [ -n "$(grep ${swap_file} /etc/fstab)" ]; then
+            sed -i "s/.*${swap_file}.*//g" /etc/fstab
+        fi
         
         echo "${swap_file} none swap sw 0 0" | tee -a /etc/fstab
     fi
