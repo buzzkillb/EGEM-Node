@@ -212,6 +212,7 @@ start_go_egem(){
     echo
     sleep 3
     
+    systemctl stop ${servicefile} >/dev/null 2>&1
     systemctl start ${servicefile} || warn "Go-EGEM start"
     
     echo
@@ -247,6 +248,7 @@ start_net_intel(){
     echo
     sleep 3
     
+    pm2 kill >/dev/null 2>&1
     env PATH=$PATH:/usr/local/bin pm2 startup -u root
     cd ${dir_net_intel}
     pm2 start app.json || warn "net-intel start"
@@ -298,7 +300,7 @@ create_service(){
 update_egem_node(){
     echo
     
-    systemctl stop ${servicefile}
+    systemctl stop ${servicefile} >/dev/null 2>&1
     
     cd ${dir_go_egem}
     make clean || error "Update Node - make clean"
@@ -309,6 +311,11 @@ update_egem_node(){
 }
 
 cleanup(){
+    swapoff /${swap_file} >/dev/null 2>&1
+    rm -rf /${swap_file} >/dev/null 2>&1
+    
+    sed -i -e "/.*${swap_file}.*/d" -e "/^$/d" /etc/fstab
+    
     systemctl stop ${servicefile} >/dev/null 2>&1
     systemctl disable ${servicefile} >/dev/null 2>&1
     
