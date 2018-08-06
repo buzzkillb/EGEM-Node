@@ -5,6 +5,10 @@ create_swap(){
     
     total_swap_size="$(swapon -s | grep -vi "size" | awk '{s+=$3}END{print s}')"
     
+    if [ -z "${total_swap_size}" ]; then
+        total_swap_size="0"
+    fi
+    
     if [ "${total_swap_size}" -lt "2097148" ]; then
         swap_needed="$(((2097148 - ${total_swap_size}) / 1024))"
     else
@@ -179,10 +183,11 @@ livenet_data(){
     sleep 3
     
     cd ${HOME}
-    rm -rf ${dir_live_net}
-    mkdir -p ${dir_live_net}
-
-    cd ${dir_live_net}
+    rm -rf ${dir_live_net}/egem
+    mkdir -p ${dir_live_net}/egem
+    
+    cd ${dir_live_net}/egem
+    
     wget --no-check-certificate https://raw.githubusercontent.com/TeamEGEM/EGEM-Bootnodes/master/static-nodes.json || error "Install Node - live network data download"
 }
 
@@ -336,7 +341,7 @@ warn(){
 }
 
 dir_net_intel="${HOME}/egem-net-intelligence-api"
-dir_live_net="${HOME}/live-net/egem"
+dir_live_net="${HOME}/live-net"
 dir_go_egem="${HOME}/go-egem"
 
 servicefile="egem.service"
