@@ -3,14 +3,35 @@
 create_swap(){
     swap_file="/swapfile"
     
-    if [ -n "$(grep swap /etc/fstab)" ]; then
+    total_swap_size = "$(swapon -s | grep -vi "size" | awk '{s+=$1}END{print s}')"
+    
+    if [ "${total_swap_size}" < 2097148 ]; then
+        swap_needed="$(((2097148 - ${total_swap_size}) / 1024))"
+    fi
+    
+    if (( ${swap_needed} < 128)); then
+        swap_needed=128
+    elif (( ${swap_needed} > 128)) && (( ${swap_needed} < 256)); then
+        swap_needed=256
+    elif (( ${swap_needed} > 256)) && (( ${swap_needed} < 512)); then
+        swap_needed=512
+    elif (( ${swap_needed} > 512)) && (( ${swap_needed} < 1024)); then
+        swap_needed=1024
+    elif (( ${swap_needed} > 1024)) && (( ${swap_needed} < 1536)); then
+        swap_needed=1536
+    elif (( ${swap_needed} > 1536)) && (( ${swap_needed} < 2048)); then
+        swap_needed=2048
+    ;;
+    esac
+    
+    if (( ${swap_needed} == 0 )); then
         echo
-        echo "Looks like you already have a swap file/partition."
+        echo "Looks like you already have enough swap file/partition."
         echo "Skipping swap creation."
         echo
         sleep 3
-    else
-        fallocate -l 2G ${swap_file} || error "Create Swap - fallocate"
+        
+        fallocate -l ${swap_needed}M ${swap_file} || error "Create Swap - fallocate"
         chmod 600 ${swap_file}
         mkswap ${swap_file} || error "Create Swap - mkswap"
         swapon ${swap_file} || error "Create Swap - swapon"
@@ -228,7 +249,7 @@ create_service(){
     echo "#TimeoutStartSec=15" >> ${servicefile}
     echo "Restart=always" >> ${servicefile}
     echo "#RestartSec=5" >> ${servicefile}
-    echo "ExecStart=${dir_go_egem}/build/bin/egem --datadir ${dir_live_net}/ --maxpeers 100 --rpc" >> ${servicefile}
+    echo "ExecStart=${dir_go_egem}/build/bin/egem --datadir ${dir_live_net} --maxpeers 100 --rpc" >> ${servicefile}
     echo "#ExecStop=/usr/bin/pkill egem" >> ${servicefile}  
     echo "" >> ${servicefile}
     echo "[Install]" >> ${servicefile}
@@ -268,7 +289,7 @@ warn(){
 }
 
 dir_net_intel="${HOME}/egem-net-intelligence-api"
-dir_live_net="${HOME}/live-net/egem/"
+dir_live_net="${HOME}/live-net/egem"
 dir_go_egem="${HOME}/go-egem"
 
 servicefile="egem.service"
@@ -298,6 +319,7 @@ do
     echo " 9 - What is next? What do I need to do?"
     echo "10 - What is the ROI of a masternode?"
     echo
+    echo " r - Remove previous installation (confirmation required)"
     echo " q - exit this script"
     echo
     echo -n " Enter your selection: "
@@ -384,6 +406,27 @@ do
         echo "Don't forget to thank BuzzkillB for that page."
         echo "-------------------------------------------------------------------"
         echo
+    ;;
+    r)
+        echo
+        echo "-------------------------------------------------------------------"
+        echo "Warning !"
+        echo
+        echo "This will delete all previously downloaded/created node data"
+        echo "(go-egem and node-app, egem systemd service etc)"
+        echo
+        echo "Use this for a fresh node re-install."
+        echo "-------------------------------------------------------------------"
+        echo
+        
+        echo
+        echo "-------------------------------------------------------------------"
+        echo "Press Enter to continue"
+        echo "-------------------------------------------------------------------"
+        echo
+        read input
+        
+        cleanup
     ;;
     q)
         exit
