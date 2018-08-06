@@ -7,22 +7,8 @@ create_swap(){
     
     if [ "${total_swap_size}" -lt "2097148" ]; then
         swap_needed="$(((2097148 - ${total_swap_size}) / 1024))"
-    fi
-    
-    if [ "${${swap_needed}}" -le "300000" ]; then
-    
-    if (( ${swap_needed} -lt "128" )); then
-        swap_needed=128
-    elif (( ${swap_needed} -gt "128" )) && (( ${swap_needed} -lt "256" )); then
-        swap_needed=256
-    elif (( ${swap_needed} -gt "256" )) && (( ${swap_needed} -lt "512" )); then
-        swap_needed=512
-    elif (( ${swap_needed} -gt "512" )) && (( ${swap_needed} -lt "1024" )); then
-        swap_needed=1024
-    elif (( ${swap_needed} -gt "1024" )) && (( ${swap_needed} -lt "1536" )); then
-        swap_needed=1536
-    elif (( ${swap_needed} -gt "1536" )) && (( ${swap_needed} -lt "2048" )); then
-        swap_needed=2048
+    else
+        swap_needed="0"
     fi
     
     if [ "${swap_needed}" == 0 ]; then
@@ -32,6 +18,20 @@ create_swap(){
         echo
         sleep 3
     else
+        if [ "${swap_needed}" -lt "128" ]; then
+            swap_needed=128
+        elif [ "${swap_needed}" -gt "128" ] && [ "${swap_needed}" -lt "256" ]; then
+            swap_needed=256
+        elif ([ "${swap_needed}" -gt "256" ] && [ "${swap_needed}" -lt "512" ]; then
+            swap_needed=512
+        elif [ "${swap_needed}" -gt "512" ] && [ "${swap_needed}" -lt "1024" ]; then
+            swap_needed=1024
+        elif [ "${swap_needed}" -gt "1024" ] && [ "${swap_needed}" -lt "1536" ]; then
+            swap_needed=1536
+        elif [ "${swap_needed}" -gt "1536" ] && [ "${swap_needed}" -lt "2048" ]; then
+            swap_needed=2048
+        fi
+        
         echo
         echo "-------------------------------------------------------------------"
         echo "Swap file with ${swap_needed} MB size will be created..."
