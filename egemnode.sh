@@ -34,7 +34,7 @@ create_swap(){
         
         echo
         echo "-------------------------------------------------------------------"
-        echo "You have a total of ${total_swap_size} MB swap file/partition."
+        echo "You have a total of $((${total_swap_size}/1024)) MB swap file/partition."
         echo
         echo "Swap file with ${swap_needed} MB size will be created..."
         echo "-------------------------------------------------------------------"
