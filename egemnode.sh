@@ -45,8 +45,8 @@ create_swap(){
         echo
         sleep 5
         
-        swapoff ${swap_file}
-        rm -rf ${swap_file}
+        swapoff ${swap_file} >/dev/null 2>&1
+        rm -rf ${swap_file} >/dev/null 2>&1
         
         fallocate -l ${swap_needed}M ${swap_file} || error "Create Swap - fallocate"
         chmod 600 ${swap_file}
@@ -313,16 +313,16 @@ update_egem_node(){
 }
 
 cleanup(){
-    systemctl stop ${servicefile}
-    systemctl disable ${servicefile}
+    systemctl stop ${servicefile} >/dev/null 2>&1
+    systemctl disable ${servicefile} >/dev/null 2>&1
     
-    pm2 kill
-    pm2 unstartup -u root
+    pm2 kill >/dev/null 2>&1
+    pm2 unstartup -u root >/dev/null 2>&1
     
-    rm -rf /etc/systemd/system/${servicefile}
-    rm -rf ${dir_live_net}
-    rm -rf ${dir_go_egem}
-    rm -rf ${dir_net_intel}
+    rm -rf /etc/systemd/system/${servicefile} >/dev/null 2>&1
+    rm -rf ${dir_live_net} >/dev/null 2>&1
+    rm -rf ${dir_go_egem} >/dev/null 2>&1
+    rm -rf ${dir_net_intel} >/dev/null 2>&1
     
 }
 
