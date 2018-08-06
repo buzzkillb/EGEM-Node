@@ -20,15 +20,15 @@ create_swap(){
     else
         if [ "${swap_needed}" -lt "128" ]; then
             swap_needed=128
-        elif [ "${swap_needed}" -gt "128" ] && [ "${swap_needed}" -lt "256" ]; then
+        elif [ "${swap_needed}" -gt "128" ] && [ "${swap_needed}" -le "256" ]; then
             swap_needed=256
-        elif [ "${swap_needed}" -gt "256" ] && [ "${swap_needed}" -lt "512" ]; then
+        elif [ "${swap_needed}" -gt "256" ] && [ "${swap_needed}" -le "512" ]; then
             swap_needed=512
-        elif [ "${swap_needed}" -gt "512" ] && [ "${swap_needed}" -lt "1024" ]; then
+        elif [ "${swap_needed}" -gt "512" ] && [ "${swap_needed}" -le "1024" ]; then
             swap_needed=1024
-        elif [ "${swap_needed}" -gt "1024" ] && [ "${swap_needed}" -lt "1536" ]; then
+        elif [ "${swap_needed}" -gt "1024" ] && [ "${swap_needed}" -le "1536" ]; then
             swap_needed=1536
-        elif [ "${swap_needed}" -gt "1536" ] && [ "${swap_needed}" -lt "2048" ]; then
+        elif [ "${swap_needed}" -gt "1536" ] && [ "${swap_needed}" -le "2048" ]; then
             swap_needed=2048
         fi
         
@@ -259,7 +259,23 @@ create_service(){
     echo "#TimeoutStartSec=15" >> ${servicefile}
     echo "Restart=always" >> ${servicefile}
     echo "#RestartSec=5" >> ${servicefile}
-    echo "ExecStart=${dir_go_egem}/build/bin/egem --datadir ${dir_live_net} --maxpeers 100 --rpc" >> ${servicefile}
+    
+    ram_size="$(free -m | grep -i "mem:" | awk '{print $2}')"
+    
+    # if [ "${ram_size}" -lt "256" ]; then
+        # cache_size="128"
+    # elif [ "${ram_size}" -gt "256" ] && [ "${ram_size}" -le "512" ]; then
+        # cache_size="256"
+    # elif [ "${ram_size}" -gt "512" ] && [ "${ram_size}" -le "1024" ]; then
+        # cache_size="1024"
+    # elif [ "${ram_size}" -gt "1024" ]; then
+        # cache_size="1024"
+    # fi
+    
+    cache_size="1024"
+    
+    echo "ExecStart=${dir_go_egem}/build/bin/egem --datadir ${dir_live_net} --maxpeers 100 --rpc --cache ${cache_size}" >> ${servicefile}
+    
     echo "#ExecStop=/usr/bin/pkill egem" >> ${servicefile}  
     echo "" >> ${servicefile}
     echo "[Install]" >> ${servicefile}
@@ -282,6 +298,20 @@ update_egem_node(){
     make all || error "Update Node - make all"
     
     systemctl start ${servicefile} || warn "Go-EGEM start"
+}
+
+cleanup(){
+    systemctl stop ${servicefile}
+    systemctl disable ${servicefile}
+    
+    pm2 kill
+    pm2 unstartup -u root
+    
+    rm -rf /etc/systemd/system/${servicefile}
+    rm -rf ${dir_live_net}
+    rm -rf ${dir_go_egem}
+    rm -rf ${dir_net_intel}
+    
 }
 
 error(){
@@ -425,7 +455,7 @@ do
         echo "This will delete all previously downloaded/created node data"
         echo "(go-egem and node-app, egem systemd service etc)"
         echo
-        echo "Use this for a fresh node re-install."
+        echo "Use this if you need a fresh node re-install."
         echo "-------------------------------------------------------------------"
         echo
         
