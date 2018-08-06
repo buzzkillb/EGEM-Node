@@ -34,10 +34,12 @@ create_swap(){
         
         echo
         echo "-------------------------------------------------------------------"
+        echo "You have a total of ${total_swap_size} MB swap file/partition."
+        echo
         echo "Swap file with ${swap_needed} MB size will be created..."
         echo "-------------------------------------------------------------------"
         echo
-        sleep 3
+        sleep 5
         
         fallocate -l ${swap_needed}M ${swap_file} || error "Create Swap - fallocate"
         chmod 600 ${swap_file}
