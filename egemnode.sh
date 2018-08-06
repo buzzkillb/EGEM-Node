@@ -21,12 +21,11 @@ create_swap(){
         swap_needed=1536
     elif (( ${swap_needed} > 1536)) && (( ${swap_needed} < 2048)); then
         swap_needed=2048
-    ;;
-    esac
+    fi
     
     if (( ${swap_needed} == 0 )); then
         echo
-        echo "Looks like you already have enough swap file/partition."
+        echo "Looks like you already have 2GB (total) swap file/partition."
         echo "Skipping swap creation."
         echo
         sleep 3
