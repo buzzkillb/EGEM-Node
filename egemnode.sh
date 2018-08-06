@@ -45,8 +45,10 @@ create_swap(){
         echo
         sleep 5
         
-        swapoff /${swap_file} >/dev/null 2>&1
-        rm -rf /${swap_file} >/dev/null 2>&1
+        if [ -f "/${swap_file}" ]; then
+            swapoff /${swap_file} >/dev/null 2>&1
+            rm -rf /${swap_file} >/dev/null 2>&1
+        fi
         
         fallocate -l ${swap_needed}M /${swap_file} || error "Create Swap - fallocate"
         chmod 600 /${swap_file}
@@ -311,18 +313,21 @@ update_egem_node(){
 }
 
 cleanup(){
-    swapoff /${swap_file} >/dev/null 2>&1
-    rm -rf /${swap_file} >/dev/null 2>&1
+    if [ -f "/${swap_file}" ]; then
+        swapoff /${swap_file} >/dev/null 2>&1
+        rm -rf /${swap_file} >/dev/null 2>&1
+    fi
     
     sed -i -e "/.*${swap_file}.*/d" -e "/^$/d" /etc/fstab
     
     systemctl stop ${servicefile} >/dev/null 2>&1
     systemctl disable ${servicefile} >/dev/null 2>&1
     
+    rm -rf /etc/systemd/system/${servicefile} >/dev/null 2>&1
+    
     pm2 kill >/dev/null 2>&1
     pm2 unstartup -u root >/dev/null 2>&1
     
-    rm -rf /etc/systemd/system/${servicefile} >/dev/null 2>&1
     rm -rf ${dir_live_net} >/dev/null 2>&1
     rm -rf ${dir_go_egem} >/dev/null 2>&1
     rm -rf ${dir_net_intel} >/dev/null 2>&1
@@ -355,7 +360,8 @@ do
     clear
     echo
     echo "======================================================"
-    echo " Egem Node Installer v2 (based on BuzzkillB's script) "
+    echo " Egem Node Installer v2"
+    echo " (based on the works of BuzzkillB and jal3inc)"
     echo "======================================================"
     echo
     echo " 1 - Install Egem Node with Swap File (2G size)"
@@ -464,23 +470,29 @@ do
     r)
         echo
         echo "-------------------------------------------------------------------"
-        echo "Warning !"
-        echo
-        echo "This will delete all previously downloaded/created node data"
-        echo "(go-egem and node-app, egem systemd service etc)"
-        echo
-        echo "Use this if you need a fresh node re-install."
+        echo "Not ready yet."
         echo "-------------------------------------------------------------------"
         echo
         
-        echo
-        echo "-------------------------------------------------------------------"
-        echo "Press Enter to continue"
-        echo "-------------------------------------------------------------------"
-        echo
-        read input
+        # echo
+        # echo "-------------------------------------------------------------------"
+        # echo "Warning !"
+        # echo
+        # echo "This will delete all previously downloaded/created node data"
+        # echo "(go-egem, node-app, egem systemd service, swapfile etc)"
+        # echo
+        # echo "Use this if you need a fresh node re-install."
+        # echo "-------------------------------------------------------------------"
+        # echo
         
-        cleanup
+        # echo
+        # echo "-------------------------------------------------------------------"
+        # echo "Press Enter to continue"
+        # echo "-------------------------------------------------------------------"
+        # echo
+        # read input
+        
+        # cleanup
     ;;
     q)
         exit
