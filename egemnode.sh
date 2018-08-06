@@ -1,7 +1,7 @@
 #!/bin/bash
 
 create_swap(){
-    swap_file="/swapfile"
+    swap_file="swapfile"
     
     total_swap_size="$(swapon -s | grep -vi "size" | awk '{s+=$3}END{print s}')"
     
@@ -45,19 +45,17 @@ create_swap(){
         echo
         sleep 5
         
-        swapoff ${swap_file} >/dev/null 2>&1
-        rm -rf ${swap_file} >/dev/null 2>&1
+        swapoff /${swap_file} >/dev/null 2>&1
+        rm -rf /${swap_file} >/dev/null 2>&1
         
-        fallocate -l ${swap_needed}M ${swap_file} || error "Create Swap - fallocate"
-        chmod 600 ${swap_file}
-        mkswap ${swap_file} || error "Create Swap - mkswap"
-        swapon ${swap_file} || error "Create Swap - swapon"
+        fallocate -l ${swap_needed}M /${swap_file} || error "Create Swap - fallocate"
+        chmod 600 /${swap_file}
+        mkswap /${swap_file} || error "Create Swap - mkswap"
+        swapon /${swap_file} || error "Create Swap - swapon"
         
-        if [ -n "$(grep ${swap_file} /etc/fstab)" ]; then
-            sed -i "s/.*${swap_file}.*//g" /etc/fstab
-        fi
+        sed -i -e "/.*${swap_file}.*/d" -e "/^$/d" /etc/fstab
         
-        echo "${swap_file} none swap sw 0 0" | tee -a /etc/fstab
+        echo "/${swap_file} none swap sw 0 0" | tee -a /etc/fstab
     fi
 }
 
@@ -274,17 +272,15 @@ create_service(){
     
     ram_size="$(free -m | grep -i "mem:" | awk '{print $2}')"
     
-    # if [ "${ram_size}" -lt "256" ]; then
-        # cache_size="128"
-    # elif [ "${ram_size}" -gt "256" ] && [ "${ram_size}" -le "512" ]; then
-        # cache_size="256"
-    # elif [ "${ram_size}" -gt "512" ] && [ "${ram_size}" -le "1024" ]; then
-        # cache_size="1024"
-    # elif [ "${ram_size}" -gt "1024" ]; then
-        # cache_size="1024"
-    # fi
-    
-    cache_size="1024"
+    if [ "${ram_size}" -lt "384" ]; then
+        cache_size="128"
+    elif [ "${ram_size}" -ge "384" ] && [ "${ram_size}" -lt "640" ]; then
+        cache_size="256"
+    elif [ "${ram_size}" -ge "640" ] && [ "${ram_size}" -lt "1152" ]; then
+        cache_size="512"
+    elif [ "${ram_size}" -ge "1152" ]; then
+        cache_size="1024"
+    fi
     
     echo "ExecStart=${dir_go_egem}/build/bin/egem --datadir ${dir_live_net} --maxpeers 100 --rpc --cache ${cache_size}" >> ${servicefile}
     
@@ -323,7 +319,6 @@ cleanup(){
     rm -rf ${dir_live_net} >/dev/null 2>&1
     rm -rf ${dir_go_egem} >/dev/null 2>&1
     rm -rf ${dir_net_intel} >/dev/null 2>&1
-    
 }
 
 error(){
