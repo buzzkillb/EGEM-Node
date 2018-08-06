@@ -3,7 +3,7 @@
 create_swap(){
     swap_file="/swapfile"
     
-    total_swap_size="$(swapon -s | grep -vi "size" | awk '{s+=$1}END{print s}')"
+    total_swap_size="$(swapon -s | grep -vi "size" | awk '{s+=$3}END{print s}')"
     
     if [ "${total_swap_size}" -lt "2097148" ]; then
         swap_needed="$(((2097148 - ${total_swap_size}) / 1024))"
@@ -22,7 +22,7 @@ create_swap(){
             swap_needed=128
         elif [ "${swap_needed}" -gt "128" ] && [ "${swap_needed}" -lt "256" ]; then
             swap_needed=256
-        elif ([ "${swap_needed}" -gt "256" ] && [ "${swap_needed}" -lt "512" ]; then
+        elif [ "${swap_needed}" -gt "256" ] && [ "${swap_needed}" -lt "512" ]; then
             swap_needed=512
         elif [ "${swap_needed}" -gt "512" ] && [ "${swap_needed}" -lt "1024" ]; then
             swap_needed=1024
