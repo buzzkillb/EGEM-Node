@@ -2,6 +2,7 @@
 # Install Egem Node
 https://egem.io/
 
+forked from sehidcan
 This script is to install a Ethergem node on your own vps.
 It has been testing on a $5 [Vultr VPS](https://www.vultr.com/?ref=7408289). EGEM Devs Referral code. =)
 
